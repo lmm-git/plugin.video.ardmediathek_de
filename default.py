@@ -9,19 +9,17 @@ import xbmcgui
 import sys
 import re
 import os
+import json
 
-#addon = xbmcaddon.Addon()
-#addonID = addon.getAddonInfo('id')
-addonID = 'plugin.video.ardmediathek_de'
-addon = xbmcaddon.Addon(id=addonID)
+addon = xbmcaddon.Addon()
 socket.setdefaulttimeout(30)
 pluginhandle = int(sys.argv[1])
+addonID = addon.getAddonInfo('id')
 translation = addon.getLocalizedString
 showSubtitles = addon.getSetting("showSubtitles") == "true"
 forceViewMode = addon.getSetting("forceViewMode") == "true"
 useThumbAsFanart=addon.getSetting("useThumbAsFanart") == "true"
-viewMode = str(addon.getSetting("viewIDVideos"))
-viewModeShows = str(addon.getSetting("viewIDShows"))
+viewMode = str(addon.getSetting("viewMode"))
 baseUrl = "http://www.ardmediathek.de"
 defaultThumb = baseUrl+"/ard/static/pics/default/16_9/default_webM_16_9.jpg"
 defaultBackground = "http://www.ard.de/pool/img/ard/background/base_xl.jpg"
@@ -29,20 +27,21 @@ icon = xbmc.translatePath('special://home/addons/'+addonID+'/icon.png')
 addon_work_folder = xbmc.translatePath("special://profile/addon_data/"+addonID)
 channelFavsFile = xbmc.translatePath("special://profile/addon_data/"+addonID+"/"+addonID+".favorites")
 subFile = xbmc.translatePath("special://profile/addon_data/"+addonID+"/sub.srt")
+thumbwidth = 1920;
 
 if not os.path.isdir(addon_work_folder):
     os.mkdir(addon_work_folder)
 
 
 def index():
-    addDir(translation(30011), "", 'listShowsFavs', "")
-    addDir(translation(30001), baseUrl+"/ard/servlet/ajax-cache/3516220/view=switch/index.html", 'listVideos', "")
-    addDir(translation(30002), baseUrl+"/ard/servlet/ajax-cache/3516210/view=list/show=recent/index.html", 'listVideos', "")
-    addDir(translation(30010), baseUrl+"/ard/servlet/ajax-cache/3516188/view=switch/index.html", 'listVideos', "")
+    addDir(translation(30001), baseUrl+"/tv/Neueste-Videos/mehr?documentId=21282466", 'listVideos', "")
+    addDir(translation(30002), baseUrl+"/tv/Meistabgerufene-Videos/mehr?documentId=21282514", 'listVideos', "")
+#    addDir(translation(30010), baseUrl+"/ard/servlet/ajax-cache/3516188/view=switch/index.html", 'listVideos', "")
     addDir(translation(30014), "", 'listEinsLike', "")
-    addDir(translation(30003), baseUrl+"/ard/servlet/ajax-cache/3474718/view=switch/index.html", 'listVideos', "")
-    addDir(translation(30004), baseUrl+"/ard/servlet/ajax-cache/4585472/view=switch/index.html", 'listVideos', "")
+    addDir(translation(30003), baseUrl+"/tv/Reportage-Doku/mehr?documentId=21301806", 'listVideos', "")
+    addDir(translation(30004), baseUrl+"/tv/Film-Highlights/mehr?documentId=21301808", 'listVideos', "")
     addDir(translation(30005), "", 'listShowsAZMain', "")
+    addDir(translation(30011), "", 'listShowsFavs', "")
     addDir(translation(30006), "", 'listCats', "")
     addDir(translation(30007), "", 'listDossiers', "")
     addDir(translation(30008), "", 'search', "")
@@ -65,74 +64,42 @@ def listShowsFavs():
             addShowFavDir(title, urllib.unquote_plus(url), "listShowVideos", thumb)
         fh.close()
     xbmcplugin.endOfDirectory(pluginhandle)
-    if forceViewMode:
-        xbmc.executebuiltin('Container.SetViewMode('+viewModeShows+')')
 
 
 def listEinsLike():
-    addDir(translation(30001), baseUrl+"/ard/servlet/ajax-cache/14844072/view=switch/vflags=0-1,5-1/index.html", 'listVideos', "")
-    addDir(translation(30002), baseUrl+"/ard/servlet/ajax-cache/3516192/view=list/vflags=0-1,5-1/show=recent/index.html", 'listVideos', "")
-    addDir(translation(30010), baseUrl+"/ard/servlet/ajax-cache/3516156/view=switch/vflags=0-1,5-1/index.html", 'listVideos', "")
-    addDir(translation(30015), baseUrl+"/ard/servlet/ajax-cache/14844028/view=switch/vflags=0-1,5-1/index.html", 'listVideos', "")
-    addDir(translation(30016), baseUrl+"/ard/servlet/ajax-cache/14844030/view=switch/vflags=0-1,5-1/index.html", 'listVideos', "")
-    addDir(translation(30017), baseUrl+"/ard/servlet/ajax-cache/14844032/view=switch/vflags=0-1,5-1/index.html", 'listVideos', "")
-    addDir(translation(30018), baseUrl+"/ard/servlet/ajax-cache/14844034/view=switch/vflags=0-1,5-1/index.html", 'listVideos', "")
-    addDir(translation(30019), baseUrl+"/ard/servlet/ajax-cache/14844036/view=switch/vflags=0-1,5-1/index.html", 'listVideos', "")
+    addDir(translation(30001), baseUrl+"/einslike/Neueste-Videos/mehr?documentId=21282466", 'listVideos', "")
+    addDir(translation(30002), baseUrl+"/einslike/Meistabgerufene-Videos/mehr?documentId=21282464", 'listVideos', "")
+#    addDir(translation(30010), baseUrl+"/ard/servlet/ajax-cache/3516156/view=switch/vflags=0-1,5-1/index.html", 'listVideos', "")
+    addDir(translation(30015), baseUrl+"/einslike/Musik/mehr?documentId=21301894", 'listVideos', "")
+    addDir(translation(30016), baseUrl+"/einslike/Leben/mehr?documentId=21301896", 'listVideos', "")
+    addDir(translation(30017), baseUrl+"/einslike/Netz-Tech/mehr?documentId=21301898", 'listVideos', "")
+    addDir(translation(30018), baseUrl+"/einslike/Info/mehr?documentId=21301900", 'listVideos', "")
+    addDir(translation(30019), baseUrl+"/einslike/Spa%C3%9F-Fiktion/mehr?documentId=21301902", 'listVideos', "")
     xbmcplugin.endOfDirectory(pluginhandle)
-    if forceViewMode:
-        xbmc.executebuiltin('Container.SetViewMode('+viewMode+')')
 
 
 def listDossiers():
-    content = getUrl(baseUrl+"/ard/servlet/ajax-cache/3516154/view=switch/index.html")
-    spl = content.split('<div class="mt-media_item">')
+    content = getUrl(baseUrl+"/tv")
+    elements = content.split('<div class="con">')
+    spl = elements[5].split('<div class="mediaCon">')
     for i in range(1, len(spl), 1):
         entry = spl[i]
-        match = re.compile('<a href="(.+?)"', re.DOTALL).findall(entry)
-        url = baseUrl+match[0]
-        id = url[url.find("documentId=")+11:]
-        url = baseUrl+"/ard/servlet/ajax-cache/3517004/view=list/documentId="+id+"/goto=1/index.html"
-        match = re.compile('<span class="mt-icon mt-icon-toggle_arrows"></span>(.+?)<', re.DOTALL).findall(entry)
-        title = cleanTitle(match[0])
-        match = re.compile('src="(.+?)"', re.DOTALL).findall(entry)
-        thumb = getBetterThumb(baseUrl+match[0])
-        addDir(title, url, 'listVideosDossier', thumb)
-    xbmcplugin.endOfDirectory(pluginhandle)
-    if forceViewMode:
-        xbmc.executebuiltin('Container.SetViewMode('+viewMode+')')
-
-
-def listShowVideos(url):
-    content = getUrl(url)
-    spl = content.split('<div class="mt-media_item">')
-    for i in range(1, len(spl), 1):
-        entry = spl[i]
-        if "mt-icon_video" in entry:
-            match = re.compile('<a href="(.+?)" class="mt-fo_source" rel="(.+?)">(.+?)</a>', re.DOTALL).findall(entry)
-            url = baseUrl+match[0][0]
+        if "mediaA" in entry:
+            match = re.compile('<a href="(.+?)" class="mediaLink">(.+?)alt="(.+?)" title="" data-ctrl-image(.+?)</a>', re.DOTALL).findall(entry)
+            url = baseUrl+match[0][0].replace('&amp;', '&')
             title = cleanTitle(match[0][2])
-            match = re.compile('<span class="mt-airtime">(.+?) (.+?) min</span>', re.DOTALL).findall(entry)
-            match2 = re.compile('<span class="mt-airtime">(.+?)</span>', re.DOTALL).findall(entry)
+            match = re.compile('<div class="textWrapper">(.+?)<p class="dachzeile">(.+?)</p>(.+?)<p class="subtitle">(.+?)</p>', re.DOTALL).findall(entry)
             duration = ""
-            date = ""
             if match:
-                date = match[0][0]
-                duration = match[0][1]
+                date = match[0][1]
+                duration = float(match[0][3][:2])
                 title = date[:5]+" - "+title
-                if "00:" in duration:
-                    duration = 1
-            elif match2:
-                date = match2[0]
+            if duration == float('0'):
                 duration = 1
-                title = date[:5]+" - "+title
-            match = re.compile('src="(.+?)"', re.DOTALL).findall(entry)
-            thumb = getBetterThumb(baseUrl+match[0])
+            match = re.compile('<img class="img hideOnNoScript"(.+?)data-ctrl-image="{&#039;id&#039;:&#039;image(.+?)media&#039;,&#039;urlScheme&#039;:&#039;(.+?)&#039;}"/>', re.DOTALL).findall(entry)
+            thumb = baseUrl+match[0][2].replace("##width##", str(thumbwidth))
             if "Livestream" not in title:
-                addLink(title, url, 'playVideo', thumb, duration)
-    match = re.compile('<a  href="(.+?)" rel=".+?"\n         class=".+?">(.+?)</a>', re.DOTALL).findall(content)
-    for url, title in match:
-        if title == "Weiter":
-            addDir(translation(30009), baseUrl+url, 'listShowVideos', "", "")
+                addShowDir(title, url, 'listVideos', thumb)
     xbmcplugin.endOfDirectory(pluginhandle)
     if forceViewMode:
         xbmc.executebuiltin('Container.SetViewMode('+viewMode+')')
@@ -144,55 +111,21 @@ def listShowsAZMain():
     for letter in letters:
         addDir(letter.upper(), letter.upper(), 'listShowsAZ', "")
     xbmcplugin.endOfDirectory(pluginhandle)
-    if forceViewMode:
-        xbmc.executebuiltin('Container.SetViewMode('+viewMode+')')
 
 
 def listShowsAZ(letter):
-    content = getUrl(baseUrl+"/ard/servlet/ajax-cache/3474820/view=list/initial="+letter+"/index.html")
-    spl = content.split('<div class="mt-media_item">')
-    for i in range(1, len(spl), 1):
+    content = getUrl(baseUrl+"/tv/sendungen-a-z?buchstabe="+letter)
+    spl = content.split('<div class="mediaCon">')
+    for i in range(2, len(spl), 1):
         entry = spl[i]
-        match = re.compile('<a href="(.+?)" class="mt-fo_source" rel="(.+?)">(.+?)</a>', re.DOTALL).findall(entry)
-        url = baseUrl+match[0][0]
-        id = url[url.find("documentId=")+11:]
-        url = baseUrl+"/ard/servlet/ajax-cache/3516962/view=list/documentId="+id+"/goto=1/index.html"
-        title = cleanTitle(match[0][2])
-        match = re.compile('src="(.+?)"', re.DOTALL).findall(entry)
-        thumb = getBetterThumb(baseUrl+match[0])
-        addShowDir(title, url, 'listShowVideos', thumb)
+        match = re.compile('<div class="textWrapper">(.+?)<a href="(.+?)" class="textLink">(.+?)<h4 class="headline">(.+?)</h4>(.+?)</a>', re.DOTALL).findall(entry)
+        url = baseUrl+match[0][1]
+        title = cleanTitle(match[0][3])
+        match = re.compile('<img class="img hideOnNoScript"(.+?)data-ctrl-image="{&#039;id&#039;:&#039;image(.+?)media&#039;,&#039;urlScheme&#039;:&#039;(.+?)&#039;}"/>', re.DOTALL).findall(entry)
+        addShowDir(title, url, 'listVideos', baseUrl+match[0][2].replace("##width##", str(thumbwidth)));
     xbmcplugin.endOfDirectory(pluginhandle)
     if forceViewMode:
-        xbmc.executebuiltin('Container.SetViewMode('+viewModeShows+')')
-
-def getBetterThumb(url):
-    if baseUrl+"/ard/static/pics/default/16_9/default" in url:
-        url = defaultThumb
-    if "/scaled/" in url:
-        url = url.replace("/scaled/","/contentblob/").replace("-bild-xs16x9","/bild/1")
-    elif "/contentblob/" in url:
-        customIDs = {12660422:10159866, 13076654:13076650, 13927884:10160114, 13250800:9717382}
-        match = re.compile('/contentblob/.+?/.+?/.+?/.+?/(.+?)/', re.DOTALL).findall(url)
-        id = int(match[0])
-        if id in customIDs:
-            id = customIDs[id]
-        elif id>=15000000:
-            id = id-2
-        elif id>=12292408:
-            id = id+2
-        elif id>=10159892:
-            id = id+6
-        elif id>=10000000:
-            id = id+4
-        if id>=10000000:
-            id = str(id)
-            url = baseUrl+"/ard/servlet/contentblob/"+id[0:2]+"/"+id[2:4]+"/"+id[4:6]+"/"+id[6:8]+"/"+id+"/bild/1"
-        else:
-            newID = str(id*10)
-            id = str(id)
-            url = baseUrl+"/ard/servlet/contentblob/"+newID[0:2]+"/"+newID[2:4]+"/"+newID[4:6]+"/"+newID[6:8]+"/"+id+"/bild/1"
-    return url
-    
+        xbmc.executebuiltin('Container.SetViewMode('+viewMode+')')
 
 def listCats():
     content = getUrl(baseUrl)
@@ -203,101 +136,44 @@ def listCats():
         id = url[url.find("documentId=")+11:]
         addDir(cleanTitle(title), id, 'listVideosMain', "", "")
     xbmcplugin.endOfDirectory(pluginhandle)
-    if forceViewMode:
-        xbmc.executebuiltin('Container.SetViewMode('+viewMode+')')
-
-
-def listVideosMain(id):
-    addDir(translation(30001), baseUrl+"/ard/servlet/ajax-cache/3516698/view=switch/clipFilter=fernsehen/documentId="+id+"/index.html", 'listVideos', "")
-    addDir(translation(30002), baseUrl+"/ard/servlet/ajax-cache/3516700/view=list/clipFilter=fernsehen/documentId="+id+"/show=recent/index.html", 'listVideos', "")
-    addDir(translation(30010), baseUrl+"/ard/servlet/ajax-cache/3516702/view=switch/clipFilter=fernsehen/documentId="+id+"/index.html", 'listVideos', "")
-    xbmcplugin.endOfDirectory(pluginhandle)
-    if forceViewMode:
-        xbmc.executebuiltin('Container.SetViewMode('+viewMode+')')
 
 
 def listVideos(url):
     content = getUrl(url)
-    spl = content.split('<div class="mt-media_item">')
+    spl = content.split('<div class="teaser"')
     for i in range(1, len(spl), 1):
         entry = spl[i]
-        if "mt-icon_video" in entry:
-            match = re.compile('<a href="(.+?)" class="mt-fo_source" rel="(.+?)">(.+?)</a>', re.DOTALL).findall(entry)
-            url = baseUrl+match[0][0]
-            title = cleanTitle(match[0][2])
-            match = re.compile('<p class="mt-source mt-tile-view_hide">aus: (.+?)</p>', re.DOTALL).findall(entry)
-            show = ""
-            if match:
-                show = cleanTitle(match[0])
-                title = show+": "+title
-            match = re.compile('<span class="mt-channel mt-tile-view_hide">(.+?)</span>', re.DOTALL).findall(entry)
-            channel = ""
-            if match:
-                channel = match[0]
-            match = re.compile('<span class="mt-airtime">(.+?) (.+?) min</span>', re.DOTALL).findall(entry)
-            match2 = re.compile('<span class="mt-airtime">(.+?)</span>', re.DOTALL).findall(entry)
-            duration = ""
-            date = ""
-            if match:
-                date = match[0][0]
-                duration = match[0][1]
-                title = date[:5]+" - "+title
-                if "00:" in duration:
+        if "mediaA" in entry:
+            try:
+                match = re.compile('<a href="(.+?)" class="mediaLink">(.+?)title="(.+?)" data-ctrl-image(.+?)</a>', re.DOTALL).findall(entry)
+                match2 = re.compile('<a href="(.+?)" class="textLink">(.+?)class="headline">(.+?)</(.+?)</a>', re.DOTALL).findall(entry)
+                url = baseUrl+match[0][0].replace('&amp;', '&')
+                try:
+                    title = cleanTitle(match2[0][2])
+                except:
+                    title = cleanTitle(match[0][2])
+                match = re.compile('<div class="textWrapper">(.+?)<p class="dachzeile">(.+?)</p>(.+?)<p class="subtitle">(.+?)</p>', re.DOTALL).findall(entry)
+                duration = ""
+                if match:
+                    date = match[0][1]
+                    duration = float(match[0][3][:2])
+                    try:
+                        float(date[:2])
+                        title = date[:5]+" - "+title
+                    except ValueError:
+                        title = cleanTitle(date) +" - "+title
+                    
+                if duration == float('0'):
                     duration = 1
-            elif match2:
-                date = match2[0]
-                duration = 1
-                title = date[:5]+" - "+title
-            match = re.compile('src="(.+?)"', re.DOTALL).findall(entry)
-            thumb = getBetterThumb(baseUrl+match[0])
-            desc = cleanTitle(title+" ("+channel+")")
-            if "Livestream" not in title:
-                addLink(title, url, 'playVideo', thumb, duration, desc)
-    xbmcplugin.endOfDirectory(pluginhandle)
-    if forceViewMode:
-        xbmc.executebuiltin('Container.SetViewMode('+viewMode+')')
-
-
-def listVideosDossier(url):
-    content = getUrl(url)
-    spl = content.split('<div class="mt-media_item">')
-    for i in range(1, len(spl), 1):
-        entry = spl[i]
-        if 'class="mt-fo_source"' in entry:
-            match = re.compile('<a href="(.+?)" class="mt-fo_source" rel="(.+?)">(.+?)</a>', re.DOTALL).findall(entry)
-            url = baseUrl+match[0][0]
-            title = cleanTitle(match[0][2])
-            match = re.compile('<p class="mt-source mt-tile-view_hide">aus: (.+?)</p>', re.DOTALL).findall(entry)
-            show = ""
-            if match:
-                show = match[0]
-            match = re.compile('<span class="mt-channel mt-tile-view_hide">(.+?)</span>', re.DOTALL).findall(entry)
-            channel = ""
-            if match:
-                channel = match[0]
-            match = re.compile('<span class="mt-airtime">(.+?) (.+?) min</span>', re.DOTALL).findall(entry)
-            match2 = re.compile('<span class="mt-airtime">(.+?)</span>', re.DOTALL).findall(entry)
-            duration = ""
-            date = ""
-            if match:
-                date = match[0][0]
-                duration = match[0][1]
-                title = date[:5]+" - "+title
-                if "00:" in duration:
-                    duration = 1
-            elif match2:
-                date = match2[0]
-                duration = 1
-                title = date[:5]+" - "+title
-            match = re.compile('src="(.+?)"', re.DOTALL).findall(entry)
-            thumb = getBetterThumb(baseUrl+match[0])
-            desc = cleanTitle(date+" - "+show+" ("+channel+")")
-            if "Livestream" not in title:
-                addLink(title, url, 'playVideo', thumb, duration, desc)
-    match = re.compile('<a  href="(.+?)" rel=".+?"\n         class=".+?">(.+?)</a>', re.DOTALL).findall(content)
-    for url, title in match:
-        if title == "Weiter":
-            addDir(translation(30009), baseUrl+url, 'listVideosDossier', "", "")
+                match = re.compile('<img class="img hideOnNoScript"(.+?)data-ctrl-image="{&#039;id&#039;:&#039;image(.+?)media&#039;,&#039;urlScheme&#039;:&#039;(.+?)&#039;}"/>', re.DOTALL).findall(entry)
+                thumb = baseUrl+match[0][2].replace("##width##", str(thumbwidth))
+                if "Livestream" not in title:
+                    addLink(title, url, 'playVideo', thumb, duration)
+            except:
+                pass
+    match = re.compile('<div class="entry" data-ctrl-(content(s?)|results)Loader-source="{&#039;pixValue&#039;:&#039;(.)&#039;}">\r\n            <a href="(.+?)">', re.DOTALL).findall(content)
+    if match:
+        addDir(translation(30009), baseUrl+match[len(match)-1][3].replace('&amp;', '&'), 'listVideos', "", "")
     xbmcplugin.endOfDirectory(pluginhandle)
     if forceViewMode:
         xbmc.executebuiltin('Container.SetViewMode('+viewMode+')')
@@ -305,44 +181,39 @@ def listVideosDossier(url):
 
 def playVideo(url):
     content = getUrl(url)
-    matchFSK = re.compile('<div class="fsk">(.+?)</div>', re.DOTALL).findall(content)
-    if matchFSK:
-        fsk = matchFSK[0].strip()
-        xbmc.executebuiltin('XBMC.Notification(Info:,'+fsk+',15000)')
-    else:
-        match5 = re.compile('addMediaStream\\(1, 2, "", "(.+?)"', re.DOTALL).findall(content)
-        match6 = re.compile('addMediaStream\\(1, 1, "", "(.+?)"', re.DOTALL).findall(content)
-        match1 = re.compile('addMediaStream\\(0, 2, "(.+?)", "(.+?)"', re.DOTALL).findall(content)
-        match2 = re.compile('addMediaStream\\(0, 2, "", "(.+?)"', re.DOTALL).findall(content)
-        match3 = re.compile('addMediaStream\\(0, 1, "(.+?)", "(.+?)"', re.DOTALL).findall(content)
-        match4 = re.compile('addMediaStream\\(0, 1, "", "(.+?)"', re.DOTALL).findall(content)
-        matchUT = re.compile('setSubtitleUrl\\("(.+?)"', re.DOTALL).findall(content)
-        url = ""
-        if match5:
-            url = match5[0]
-        elif match6:
-            url = match6[0]
-        elif match2:
-            url = match2[0]
-        elif match1:
-            base = match1[0][0]
-            if not base.endswith("/"):
-                base = base+"/"
-            url = base+" playpath="+cleanUrl(match1[0][1])
-        elif match4:
-            url = match4[0]
-        elif match3:
-            base = match3[0][0]
-            if not base.endswith("/"):
-                base = base+"/"
-            url = base+" playpath="+cleanUrl(match3[0][1])
-        if url:
+    match = re.compile('<div class="media mediaA" data-ctrl-player="{&#039;(.+?)&#039;,&#039;mcUrl&#039;:&#039;(.+?)&#039;(.+?)}">', re.DOTALL).findall(content)
+    try:
+        configContent = json.loads(getUrl(baseUrl+match[0][1]))
+        if showSubtitles and configContent['_subtitleUrl'] != '':
+            setSubtitle(baseUrl+configContent['_subtitleUrl'])
+        
+        bestqualityDefined = 0
+        
+        for media in configContent['_mediaArray']:
+            if media['_plugin'] == 1:
+                for (index, stream) in enumerate(media['_mediaStreamArray']):
+                    if bestqualityDefined == 0 or bestquality['_quality'] < stream['_quality']:
+                        bestquality = stream
+                        bestqualityDefined = 1
+        
+        
+        if bestqualityDefined == 0:
+            xbmc.executebuiltin('XBMC.Notification(Unable to find stream.,The plugin needs a HTML5 player on the ardmediathek.de website.,15000)')
+        else:
+            try:
+                url = bestquality['_stream'][0]
+            except ValueError:
+                url = bestquality['_stream']
+            if isinstance(bestquality['_stream'], (list, tuple)):
+                url = bestquality['_stream'][0]
+            else:
+                url = bestquality['_stream']
             if "?" in url:
                 url = url[:url.find("?")]
             listitem = xbmcgui.ListItem(path=url)
             xbmcplugin.setResolvedUrl(pluginhandle, True, listitem)
-            if showSubtitles and matchUT:
-                setSubtitle(baseUrl+matchUT[0])
+    except IndexError:
+        xbmc.executebuiltin('XBMC.Notification(Unable to find stream.,Is the access to the stream restricted (FSK)?,15000)')
 
 
 def setSubtitle(url):
@@ -392,7 +263,7 @@ def search():
     keyboard.doModal()
     if keyboard.isConfirmed() and keyboard.getText():
         search_string = keyboard.getText().replace(" ", "+")
-        listVideosSearch(baseUrl+"/suche?detail=40&sort=r&s="+search_string+"&inhalt=tv&goto=1")
+        listVideos(baseUrl+"/tv/suche?&searchText="+search_string)
 
 
 def listVideosSearch(url):
@@ -411,26 +282,19 @@ def listVideosSearch(url):
         channel = ""
         if match:
             channel = match[0]
-        match = re.compile('<span class="mt-airtime">(.+?) (.+?) min</span>', re.DOTALL).findall(entry)
-        match2 = re.compile('<span class="mt-airtime">(.+?)</span>', re.DOTALL).findall(entry)
+        match = re.compile('<span class="mt-airtime">(.+?) · (.+?) min</span>', re.DOTALL).findall(entry)
         duration = ""
         date = ""
         if match:
             date = match[0][0]
             duration = match[0][1]
             title = date[:5]+" - "+title
-            if "00:" in duration:
-                duration = 1
-        elif match2:
-            date = match2[0]
-            duration = 1
-            title = date[:5]+" - "+title
         match = re.compile('src="(.+?)"', re.DOTALL).findall(entry)
         thumb = getBetterThumb(baseUrl+match[0])
         desc = cleanTitle(date+" - "+show+" ("+channel+")")
         if "Livestream" not in title:
             addLink(title, url, 'playVideo', thumb, duration, desc)
-    match = re.compile('href="(.+?)".+?>(.+?)<', re.DOTALL).findall(content)
+    match = re.compile('<a  href="(.+?)"  class=".+?" rel=".+?">(.+?)</a>', re.DOTALL).findall(content)
     for url, title in match:
         if title == "Weiter":
             addDir(translation(30009), baseUrl+url.replace("&amp;", "&"), 'listVideosSearch', "", "")
@@ -509,7 +373,7 @@ def addLink(name, url, mode, iconimage, duration="", desc=""):
     liz.setInfo(type="Video", infoLabels={"Title": name, "Duration": duration, "Plot": desc})
     liz.setProperty('IsPlayable', 'true')
     if useThumbAsFanart:
-        if not iconimage or iconimage==icon or iconimage==defaultThumb:
+        if not iconimage or iconimage==icon:
             iconimage = defaultBackground
         liz.setProperty("fanart_image", iconimage)
     else:
@@ -522,10 +386,10 @@ def addLink(name, url, mode, iconimage, duration="", desc=""):
 def addDir(name, url, mode, iconimage, desc=""):
     u = sys.argv[0]+"?url="+urllib.quote_plus(url)+"&mode="+str(mode)
     ok = True
-    liz = xbmcgui.ListItem(name, iconImage=icon, thumbnailImage=iconimage)
+    liz = xbmcgui.ListItem(name, iconImage="DefaultFolder.png", thumbnailImage=iconimage)
     liz.setInfo(type="Video", infoLabels={"Title": name, "Plot": desc})
     if useThumbAsFanart:
-        if not iconimage or iconimage==icon or iconimage==defaultThumb:
+        if not iconimage:
             iconimage = defaultBackground
         liz.setProperty("fanart_image", iconimage)
     else:
@@ -540,7 +404,7 @@ def addShowDir(name, url, mode, iconimage):
     liz = xbmcgui.ListItem(name, iconImage=defaultThumb, thumbnailImage=iconimage)
     liz.setInfo(type="Video", infoLabels={"Title": name})
     if useThumbAsFanart:
-        if not iconimage or iconimage==icon or iconimage==defaultThumb:
+        if not iconimage:
             iconimage = defaultBackground
         liz.setProperty("fanart_image", iconimage)
     else:
@@ -557,7 +421,7 @@ def addShowFavDir(name, url, mode, iconimage):
     liz = xbmcgui.ListItem(name, iconImage=defaultThumb, thumbnailImage=iconimage)
     liz.setInfo(type="Video", infoLabels={"Title": name})
     if useThumbAsFanart:
-        if not iconimage or iconimage==icon or iconimage==defaultThumb:
+        if not iconimage:
             iconimage = defaultBackground
         liz.setProperty("fanart_image", iconimage)
     else:
